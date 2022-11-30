@@ -7,7 +7,7 @@ from models.layers.mesh_conv import MeshConv
 import torch.nn.functional as F
 from models.layers.mesh_pool import MeshPool
 from models.layers.mesh_unpool import MeshUnpool
-
+from models.NT_Xent import NT_Xent
 
 ###############################################################################
 # Helper Functions
@@ -106,6 +106,8 @@ def define_classifier(input_nc, ncf, ninput_edges, nclasses, opt, gpu_ids, arch,
         pool_res = [ninput_edges] + opt.pool_res
         net = MeshEncoderDecoder(pool_res, down_convs, up_convs, blocks=opt.resblocks,
                                  transfer_data=True)
+    elif arch == 'meshsimclr': # nclasses = out_dim, but we need a bit of renaming here.
+        net = MeshSimCLR(norm_layer, input_nc, ncf, nclasses, ninput_edges, opt.pool_res, opt.fc_n, opt.resblocks)
     else:
         raise NotImplementedError('Encoder model name [%s] is not recognized' % arch)
     return init_net(net, init_type, init_gain, gpu_ids)
@@ -115,6 +117,8 @@ def define_loss(opt):
         loss = torch.nn.CrossEntropyLoss()
     elif opt.dataset_mode == 'segmentation':
         loss = torch.nn.CrossEntropyLoss(ignore_index=-1)
+    elif opt.dataset_mode == 'simclr':
+        loss = NT_Xent(opt.batch_size, opt.temperature)
     return loss
 
 ##############################################################################
@@ -122,19 +126,27 @@ def define_loss(opt):
 ##############################################################################
 
 class MeshConvNet(nn.Module):
-    """Network for learning a global shape descriptor (classification)
+    """
+    Network for learning a global shape descriptor (classification)
     """
     def __init__(self, norm_layer, nf0, conv_res, nclasses, input_res, pool_res, fc_n,
                  nresblocks=3):
         super(MeshConvNet, self).__init__()
+        print("initializing MeshConvNet: ", "norm_layer", norm_layer, "nf0", nf0, "conv_res", conv_res, "nclasses", nclasses,"input_res", input_res, "pool_res", pool_res, "fc_n", fc_n, "nresblocks", nresblocks)
         self.k = [nf0] + conv_res
+        print("self.k:", self.k)
         self.res = [input_res] + pool_res
+        print("self.res:", self.res)
         norm_args = get_norm_args(norm_layer, self.k[1:])
+        print("norm_args:", norm_args)
 
         for i, ki in enumerate(self.k[:-1]):
             setattr(self, 'conv{}'.format(i), MResConv(ki, self.k[i + 1], nresblocks))
+            print('conv{}'.format(i), getattr(self, 'conv{}'.format(i)))
             setattr(self, 'norm{}'.format(i), norm_layer(**norm_args[i]))
+            print('norm{}'.format(i), getattr(self, 'norm{}'.format(i)))
             setattr(self, 'pool{}'.format(i), MeshPool(self.res[i + 1]))
+            print('pool{}'.format(i), getattr(self, 'pool{}'.format(i)))
 
 
         self.gp = torch.nn.AvgPool1d(self.res[-1])
@@ -155,6 +167,107 @@ class MeshConvNet(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return x
+
+class Mesh_BaseEncoder_SimCLR(nn.Module):
+    """ 
+    Modified from the original MeshConvNet class. 
+    For SimCLR usage.
+    Contains: (conv+norm+pool) * n + globalpool 
+    The difference is that the fc1 and fc2 layers (and the ReLU in between) are removed.
+    """
+    def __init__(self, norm_layer, nf0, conv_res, input_res, pool_res, nresblocks=3):
+        super(Mesh_BaseEncoder_SimCLR, self).__init__()
+        print("initializing Mesh_BaseEncoder_SimCLR: ", "norm_layer", norm_layer, "nf0", nf0, "conv_res", conv_res, "nclasses", nclasses,"input_res", input_res, "pool_res", pool_res, "fc_n", fc_n, "nresblocks", nresblocks)
+        self.k = [nf0] + conv_res
+        print("self.k:", self.k)
+        self.res = [input_res] + pool_res
+        print("self.res:", self.res)
+        norm_args = get_norm_args(norm_layer, self.k[1:])
+        print("norm_args:", norm_args)
+
+        for i, ki in enumerate(self.k[:-1]):
+            setattr(self, 'conv{}'.format(i), MResConv(ki, self.k[i + 1], nresblocks))
+            print('conv{}'.format(i), getattr(self, 'conv{}'.format(i)))
+            setattr(self, 'norm{}'.format(i), norm_layer(**norm_args[i]))
+            print('norm{}'.format(i), getattr(self, 'norm{}'.format(i)))
+            setattr(self, 'pool{}'.format(i), MeshPool(self.res[i + 1]))
+            print('pool{}'.format(i), getattr(self, 'pool{}'.format(i)))
+
+
+        self.gp = torch.nn.AvgPool1d(self.res[-1])
+
+    def forward(self, x, mesh):
+
+        for i in range(len(self.k) - 1):
+            x = getattr(self, 'conv{}'.format(i))(x, mesh)
+            x = F.relu(getattr(self, 'norm{}'.format(i))(x))
+            x = getattr(self, 'pool{}'.format(i))(x, mesh)
+
+        x = self.gp(x)
+        x = x.view(-1, self.k[-1])
+        return x
+
+
+
+        
+class MeshSimCLR(nn.Module): # this is the main network we use.
+    """
+    Modified from the original MeshConvNet class. 
+    For SimCLR usage.
+    Contains:
+         1. Base Encoder (conv+norm+pool) * n + globalpool
+         2. Projection Head (linear + ReLU + linear)
+    """
+    def __init__(self, norm_layer, nf0, conv_res, out_dim, input_res, pool_res, fc_n,
+                 nresblocks=3):
+        super(MeshSimCLR, self).__init__()
+        print("initializing MeshSimCLR: ", "norm_layer", norm_layer, "nf0", nf0, "conv_res", conv_res, "out_dim", out_dim,"input_res", input_res, "pool_res", pool_res, "fc_n", fc_n, "nresblocks", nresblocks)
+        self.k = [nf0] + conv_res
+        print("self.k:", self.k)
+        self.res = [input_res] + pool_res
+        print("self.res:", self.res)
+        norm_args = get_norm_args(norm_layer, self.k[1:])
+        print("norm_args:", norm_args)
+
+        for i, ki in enumerate(self.k[:-1]):
+            setattr(self, 'conv{}'.format(i), MResConv(ki, self.k[i + 1], nresblocks))
+            setattr(self, 'norm{}'.format(i), norm_layer(**norm_args[i]))
+            setattr(self, 'pool{}'.format(i), MeshPool(self.res[i + 1]))
+
+
+        self.gp = torch.nn.AvgPool1d(self.res[-1])
+        # self.gp = torch.nn.MaxPool1d(self.res[-1])
+        
+        #projection head
+        self.fc1 = nn.Linear(self.k[-1], self.k[-1])
+        self.fc2 = nn.Linear(self.k[-1], out_dim)
+
+    def forward(self, x, meshes):
+
+        x_i, x_j = x[:, 0, :, :], x[:, 1, :, :] # each term xk is the tuple (x_ik, x_jk) aka two augmented meshes
+        mesh_i, mesh_j = meshes[:, 0], meshes[:, 1] # similarly, we have meshes stored as a tuple. 
+
+        for i in range(len(self.k) - 1):
+            x_i = getattr(self, 'conv{}'.format(i))(x_i, mesh_i)
+            x_i = F.relu(getattr(self, 'norm{}'.format(i))(x_i))
+            x_i = getattr(self, 'pool{}'.format(i))(x_i, mesh_i)
+
+            x_j = getattr(self, 'conv{}'.format(i))(x_j, mesh_j)
+            x_j = F.relu(getattr(self, 'norm{}'.format(i))(x_j))
+            x_j = getattr(self, 'pool{}'.format(i))(x_j, mesh_j)
+
+        h_i = self.gp(x_i)
+        h_j = self.gp(x_j)
+
+        z_i = h_i.view(-1, self.k[-1])
+        z_i = F.relu(self.fc1(z_i))
+        z_i = self.fc2(z_i)
+
+        z_j = h_j.view(-1, self.k[-1])
+        z_j = F.relu(self.fc1(z_j))
+        z_j = self.fc2(z_j)
+
+        return (h_i, h_j), (z_i, z_j)
 
 class MResConv(nn.Module):
     def __init__(self, in_channels, out_channels, skips=1):

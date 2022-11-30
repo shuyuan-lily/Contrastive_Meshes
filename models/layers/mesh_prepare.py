@@ -173,6 +173,8 @@ def compute_face_normals_and_areas(mesh, faces):
 
 # Data augmentation methods
 def augmentation(mesh, opt, faces=None):
+    if hasattr(opt, 'rotate_and_shear') and opt.rotate_and_shear:
+        rotate_and_shear(mesh)
     if hasattr(opt, 'scale_verts') and opt.scale_verts:
         scale_verts(mesh)
     if hasattr(opt, 'flip_edges') and opt.flip_edges:
@@ -205,7 +207,42 @@ def slide_verts(mesh, prct):
             break
     mesh.shifted = shifted / len(mesh.ve)
 
+# from text2mesh repository
+def getRotMat(axis, theta):
+    """
+    axis: np.array, normalized vector
+    theta: radians
+    """
+    import math
 
+    axis = axis / np.linalg.norm(axis)
+    a0, a1, a2 = axis[0], axis[1], axis[2]
+    cprod = np.array([[0, -a2, a1], 
+                      [a2, 0, -a0], 
+                      [-a1, a0, 0]], dtype=np.float)
+    rot = math.cos(theta) * np.identity(3) + math.sin(theta) * cprod + \
+          (1 - math.cos(theta)) * np.outer(axis, axis)
+    return rot
+
+# Newly added function
+def affine(mesh, A=np.eye(3)):
+    mesh.vs = (A @ mesh.vs.T).T
+
+def rotate_and_shear(mesh):
+    # rotation
+    mean = 1
+    var = 0.1
+    axis = np.random.normal(loc=mean, scale=var, size=(3,))
+    theta = np.random.uniform(0, 2 * np.pi)
+    A = getRotMat(axis=axis, theta=theta)
+    affine(mesh, A)
+
+    # shear
+    B = np.eye(3)
+    row, col = np.random.choice(3, 2, replace=False)
+    B[row][col] = np.random.normal(loc=0, scale=.7)
+    affine(mesh, B)
+    
 def scale_verts(mesh, mean=1, var=0.1):
     for i in range(mesh.vs.shape[1]):
         mesh.vs[:, i] = mesh.vs[:, i] * np.random.normal(mean, var)

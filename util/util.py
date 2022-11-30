@@ -19,3 +19,25 @@ def pad(input_arr, target_length, val=0, dim=1):
     npad = [(0, 0) for _ in range(len(shp))]
     npad[dim] = (0, target_length - shp[dim])
     return np.pad(input_arr, pad_width=npad, mode='constant', constant_values=val)
+
+def seg_accuracy(predicted, ssegs, meshes):
+    correct = 0
+    ssegs = ssegs.squeeze(-1)
+    correct_mat = ssegs.gather(2, predicted.cpu().unsqueeze(dim=2))
+    for mesh_id, mesh in enumerate(meshes):
+        correct_vec = correct_mat[mesh_id, :mesh.edges_count, 0]
+        edge_areas = torch.from_numpy(mesh.get_edge_areas())
+        correct += (correct_vec.float() * edge_areas).sum()
+    return correct
+
+def print_network(net):
+    """Print the total number of parameters in the network
+    Parameters:
+        network
+    """
+    print('---------- Network initialized -------------')
+    num_params = 0
+    for param in net.parameters():
+        num_params += param.numel()
+    print('[Network] Total number of parameters : %.3f M' % (num_params / 1e6))
+    print('-----------------------------------------------')

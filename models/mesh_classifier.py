@@ -25,7 +25,10 @@ class ClassifierModel:
         self.soft_label = None
         self.loss = None
 
-        #
+        
+        if opt.dataset_mode == 'simclr':
+            opt.nclasses = opt.out_dim
+
         self.nclasses = opt.nclasses
 
         # load/define networks
@@ -48,22 +51,39 @@ class ClassifierModel:
         # set inputs
         self.edge_features = input_edge_features.to(self.device).requires_grad_(self.is_train)
         self.labels = labels.to(self.device)
-        self.mesh = data['mesh']
+
+        if self.opt.dataset_mode != 'simclr':
+            self.mesh = data['mesh']
+        else: 
+            self.mesh = data['meshes']
+
         if self.opt.dataset_mode == 'segmentation' and not self.is_train:
             self.soft_label = torch.from_numpy(data['soft_label'])
 
 
     def forward(self):
-        out = self.net(self.edge_features, self.mesh)
-        return out
+        if self.opt.dataset_mode != 'simclr':
+            out = self.net(self.edge_features, self.mesh)
+            return out
+        else:
+            reps, out = self.net(self.edge_features, self.mesh)
+            return reps, out
 
-    def backward(self, out):
-        self.loss = self.criterion(out, self.labels)
+    def backward(self, out): # todo: make this compatible with simclr's NT_Xent loss
+        if self.opt.dataset_mode != 'simclr': 
+            self.loss = self.criterion(out, self.labels)
+        else:
+            z_i = out[0]
+            z_j = out[1]
+            self.loss = self.criterion(z_i, z_j)
         self.loss.backward()
 
     def optimize_parameters(self):
         self.optimizer.zero_grad()
-        out = self.forward()
+        if self.opt.dataset_mode != 'simclr': 
+            out = self.forward()
+        else:
+            reps, out = self.forward()
         self.backward(out)
         self.optimizer.step()
 

@@ -1,5 +1,4 @@
 import torch
-import kaolin
 import numpy as np
 # import torchvision
 # import torchvision.transforms.functional as TF
@@ -20,7 +19,7 @@ def homogeneous_coordinates(vertices):
 
 
 def vertice_affine_transformation(vertices, A):
-    vertices = vertices.to(device)
+    # vertices = vertices.to(device)
     A = torch.from_numpy(A).float().to(device)
     if A.size() == torch.Size([4, 4]): ## translation involved
       hom_vertice = homogeneous_coordinates(vertices) 
@@ -33,7 +32,7 @@ def vertice_affine_transformation(vertices, A):
 
 def affine_transformation(mesh, A):
     new_mesh = copy.deepcopy(mesh)
-    new_mesh.vertices = vertice_affine_transformation(mesh.vertices, A)
+    new_mesh.vs = vertice_affine_transformation(mesh.vs, A)
     return new_mesh
 
 class AffineTransform:

@@ -35,7 +35,7 @@ class ClassificationData(BaseDataset):
     def __len__(self):
         return self.size
     
-    # this is when the folders are organized by clas
+    # this is when the folders are organized by class
     @staticmethod
     def find_classes(dir):
         classes = [d for d in os.listdir(dir) if os.path.isdir(os.path.join(dir, d))]

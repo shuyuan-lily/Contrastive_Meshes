@@ -19,14 +19,15 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--lr_decay_iters', type=int, default=50, help='multiply by a gamma every lr_decay_iters iterations')
         
         # data augmentation stuff
-        #self.parser.add_argument('--num_aug', type=int, default=10, help='# of augmentation files')
-        #self.parser.add_argument('--scale_verts', action='store_true', help='non-uniformly scale the mesh e.g., in x, y or z')
-        #self.parser.add_argument('--slide_verts', type=float, default=0, help='percent vertices which will be shifted along the mesh surface')
-        #self.parser.add_argument('--flip_edges', type=float, default=0, help='percent of edges to randomly flip')
-        
+        self.parser.add_argument('--num_aug', type=int, default=10, help='# of augmentation files')
+        self.parser.add_argument('--scale_verts', action='store_true', help='non-uniformly scale the mesh e.g., in x, y or z')
+        self.parser.add_argument('--slide_verts', type=float, default=0, help='percent vertices which will be shifted along the mesh surface')
+        self.parser.add_argument('--flip_edges', type=float, default=0, help='percent of edges to randomly flip')
+        self.parser.add_argument('--rotate_and_shear', action='store_true', help='apply random rotation and shearing onto the mesh')
+
         # tensorboard visualization
-        #self.parser.add_argument('--no_vis', action='store_true', help='will not use tensorboard')
-        #self.parser.add_argument('--verbose_plot', action='store_true', help='plots network weights, etc.')
+        self.parser.add_argument('--no_vis', action='store_true', help='will not use tensorboard')
+        self.parser.add_argument('--verbose_plot', action='store_true', help='plots network weights, etc.')
         
         self.is_train = True
 

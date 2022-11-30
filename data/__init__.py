@@ -8,6 +8,14 @@ def CreateDataset(opt):
     if opt.dataset_mode == 'classification':
         from data.classification_data import ClassificationData
         dataset = ClassificationData(opt)
+    elif opt.dataset_mode == 'segmentation':
+        from data.segmentation_data import SegmentationData
+        dataset = SegmentationData(opt)
+    elif opt.dataset_mode == 'simclr':
+        from data.simclr_data import SimCLRData
+        dataset = SimCLRData(opt)
+    else:
+        raise Exception("CreateDataset: Dataset type not implemented")
     return dataset
 
 class DataLoader:

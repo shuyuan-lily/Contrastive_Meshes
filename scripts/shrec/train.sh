@@ -16,7 +16,7 @@ python train.py \
 --num_aug 20 \
 --rotate_and_shear \
 --scale_verts \
---out_dim 128 \
+--out_dim 512 \
 --lr 0.0004 \
---batch_size 80 \
+--batch_size 48 \
 --num_threads 2 \

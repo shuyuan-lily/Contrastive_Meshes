@@ -1,0 +1,11 @@
+.idea/*
+*.pyc
+*.m~
+try*
+tensorboard_visualizations/*
+__pycache__*
+# data files
+*.obj
+checkpoints
+datasets
+runs

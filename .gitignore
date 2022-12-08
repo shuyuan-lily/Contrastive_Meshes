@@ -3,7 +3,7 @@
 *.m~
 try*
 tensorboard_visualizations/*
-__pycache__*
+*__pycache__*
 # data files
 *.obj
 checkpoints

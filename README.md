@@ -36,7 +36,7 @@ tensorboard dev upload --logdir runs
 ```
 Here is an example of the training loss plot:
 
-<img src="/docs/imgs/training_loss.png" width="250px"/> 
+<img src="/docs/imgs/training_loss.png" width="450px"/> 
 
 To run test on the latest updated network, run: 
 ```

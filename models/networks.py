@@ -129,8 +129,7 @@ class MeshConvNet(nn.Module):
     """
     Network for learning a global shape descriptor (classification)
     """
-    def __init__(self, norm_layer, nf0, conv_res, nclasses, input_res, pool_res, fc_n,
-                 nresblocks=3):
+    def __init__(self, norm_layer, nf0, conv_res, nclasses, input_res, pool_res, fc_n, nresblocks):
         super(MeshConvNet, self).__init__()
         print("initializing MeshConvNet: ", "norm_layer", norm_layer, "nf0", nf0, "conv_res", conv_res, "nclasses", nclasses,"input_res", input_res, "pool_res", pool_res, "fc_n", fc_n, "nresblocks", nresblocks)
         self.k = [nf0] + conv_res
@@ -175,7 +174,7 @@ class Mesh_BaseEncoder_SimCLR(nn.Module):
     Contains: (conv+norm+pool) * n + globalpool 
     The difference is that the fc1 and fc2 layers (and the ReLU in between) are removed.
     """
-    def __init__(self, norm_layer, nf0, conv_res, input_res, pool_res, nresblocks=3):
+    def __init__(self, norm_layer, nf0, conv_res, input_res, pool_res, nresblocks):
         super(Mesh_BaseEncoder_SimCLR, self).__init__()
         print("initializing Mesh_BaseEncoder_SimCLR: ", "norm_layer", norm_layer, "nf0", nf0, "conv_res", conv_res,"input_res", input_res, "pool_res", pool_res, "nresblocks", nresblocks)
         self.k = [nf0] + conv_res
@@ -213,9 +212,9 @@ class MeshSimCLR(nn.Module):
          1. Base Encoder (conv+norm+pool) * n + globalpool
          2. Projection Head (linear + ReLU + linear)
     """
-    def __init__(self, norm_layer, nf0, conv_res, out_dim, input_res, pool_res, fc_n, nresblocks=3):
+    def __init__(self, norm_layer, nf0, conv_res, out_dim, input_res, pool_res, fc_n, nresblocks):
         super(MeshSimCLR, self).__init__()
-        self.base_encoder = Mesh_BaseEncoder_SimCLR(norm_layer, nf0, conv_res, input_res, pool_res, nresblocks=3)
+        self.base_encoder = Mesh_BaseEncoder_SimCLR(norm_layer, nf0, conv_res, input_res, pool_res, nresblocks)
         self.k = [nf0] + conv_res
 
         #projection head

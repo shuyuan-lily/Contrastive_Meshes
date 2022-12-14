@@ -9,7 +9,7 @@ python train.py \
 --ncf 64 128 256 512 \
 --pool_res 600 450 300 180 \
 --norm group \
---resblocks 1 \
+--resblocks 5 \
 --niter_decay 100 \
 --flip_edges 0.2 \
 --slide_verts 0.2 \
@@ -18,5 +18,6 @@ python train.py \
 --scale_verts \
 --out_dim 512 \
 --lr 0.0004 \
---batch_size 48 \
+--batch_size 96 \
 --num_threads 2 \
+--verbose_plot \

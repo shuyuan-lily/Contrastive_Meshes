@@ -15,7 +15,7 @@ def run_test(epoch=-1):
     writer.reset_counter()
     for i, data in enumerate(dataset):
         model.set_input(data)
-        ncorrect, nexamples = model.test() ## todo for simclr task: change the measurement of the test. we are facing a regression problem, not a classification one. 
+        ncorrect, nexamples = model.test() 
         writer.update_counter(ncorrect, nexamples)
     writer.print_acc(epoch, writer.acc)
     return writer.acc

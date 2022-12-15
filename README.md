@@ -75,9 +75,7 @@ In the evaluation, a linear classifier is trained on top of the frozen base netw
 
 ### Preliminary Evaluation
 
-Representation learning differs from traditional classification or regression tasks, so there has not been a plug-and-use means of testing model performance without reference to particular downstream tasks.
-
-To preliminarily get a direct sense of network performance, I define the following evaluation metric, analogous to classification. 
+To preliminarily get a direct sense of network performance, we can define the following evaluation metric, analogous to classification. 
 
 > 1. Given a representation, find its nearest neighbor in feature space (that is, before the nonlinear projection head in the SimCLR architecture);
 > 2. Check whether the nearest neighbor belongs to the same class with the original representation. If it does, then we have an instance that is analogous to the "correct label" in the case of traditional classification tasks.

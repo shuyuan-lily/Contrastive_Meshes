@@ -35,6 +35,7 @@ To view the visualization of training loss, test accuracy, and intermetiate mode
 tensorboard dev upload --logdir runs
 ```
 
+You can check the sample plots here for reference and comparison:
 <p align="left">
   <a href="https://tensorboard.dev/experiment/pjWNpRK3SYSA0VZeYAXW6g/#scalars" target="_blank">
     <img src="/docs/imgs/tensorboard.png" height="40"/>
@@ -55,7 +56,7 @@ To view the [T-SNE](https://en.wikipedia.org/wiki/T-distributed_stochastic_neigh
 ```
 bash scripts/shrec/tsne.sh
 ```
-Here is an example of the visualization on the entire dataset consisted of 600 meshes in shrec16, using both the train and test meshes:
+Here is an example of the visualization on the entire dataset consisted of 600 meshes in shrec16, using both the train and test meshes. Each class consists of 12 meshes (8 in train set and 4 in test set), with a total of 30 classes. 
 
 <img src="/docs/imgs/tsne_train_last_layer_2.png" width="500px"/> 
 
@@ -66,7 +67,7 @@ Here is an example of the visualization on the entire dataset consisted of 600 m
 
 ### Preliminary Evaluation
 
-Representation learning differs from traditional classification or regression tasks, so there has not been an agreed or pre-defined means of testing model performance without reference to particular downstream tasks.
+Representation learning differs from traditional classification or regression tasks, so there has not been a plug-and-use means of testing model performance without reference to particular downstream tasks.
 
 To preliminarily get a direct sense of network performance, I define the following evaluation metric, analogous to classification. 
 

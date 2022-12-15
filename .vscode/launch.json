@@ -1,0 +1,42 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true, 
+            "args": ["--dataroot", "/net/projects/ranalab/shuyuan/Contrastive_Meshes/datasets/shrec_16","--name",
+            "shrec16",
+            "--arch",
+            "meshsimclr",
+            "--dataset_mode",
+            "simclr",
+            "--ncf",
+            "64",
+            "128",
+            "256",
+            "512",
+            "--pool_res",
+            "600",
+            "450",
+            "300",
+            "180",
+            "--out_dim",
+            "512",
+            "--norm",
+            "group",
+            "--resblocks",
+            "5",
+            "--is_lin_eval"
+            ], 
+            "purpose": ["debug-in-terminal"]
+
+        }
+    ]
+}

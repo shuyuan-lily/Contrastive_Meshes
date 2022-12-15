@@ -11,3 +11,4 @@ python linear_evaluation.py \
 --out_dim 512 \
 --norm group \
 --resblocks 5 \
+--is_lin_eval \

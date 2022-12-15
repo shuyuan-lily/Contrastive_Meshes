@@ -38,6 +38,9 @@ class BaseOptions:
         
         self.parser.add_argument('--temperature', type=float, default=0.5, help='the temperature of the NT_Xent loss calculation')
         
+        # tensorboard visualization
+        self.parser.add_argument('--no_vis', action='store_true', help='will not use tensorboard')
+        self.parser.add_argument('--verbose_plot', action='store_true', help='plots network weights, etc.')
         # visualization params
         self.parser.add_argument('--export_folder', type=str, default='', help='exports intermediate collapses to this folder')
         

@@ -14,6 +14,7 @@ class Writer:
         self.save_dir = os.path.join(opt.checkpoints_dir, opt.name)
         now = time.strftime("%c")
         self.log_name = os.path.join(self.save_dir, 'loss_log.txt')
+        self.lineval_name = os.path.join(self.save_dir, 'lin_eval_log.txt') 
         self.testacc_log = os.path.join(self.save_dir, 'testacc_log.txt')
         self.start_logs()
         self.nexamples = 0
@@ -21,8 +22,12 @@ class Writer:
         #
         if opt.is_train and not opt.no_vis and SummaryWriter is not None:
             self.display = SummaryWriter(comment=opt.name)
+        if opt.is_lin_eval and not opt.no_vis and SummaryWriter is not None:
+            print('summary writer available')
+            self.display = SummaryWriter(comment=opt.name)
         else:
             self.display = None
+            print('summary writer NONE')
 
     def start_logs(self):
         """ creates test / train log files """
@@ -30,6 +35,10 @@ class Writer:
             with open(self.log_name, "a") as log_file:
                 now = time.strftime("%c")
                 log_file.write('================ Training Loss (%s) ================\n' % now)
+        elif self.opt.is_lin_eval:
+            with open(self.log_name, "a") as log_file:
+                now = time.strftime("%c") 
+                log_file.write('================ Linear Evaluation (%s) ================\n' % now) 
         else:
             with open(self.testacc_log, "a") as log_file:
                 now = time.strftime("%c")

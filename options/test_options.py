@@ -9,5 +9,6 @@ class TestOptions(BaseOptions):
         self.parser.add_argument('--which_epoch', type=str, default='latest', help='which epoch to load? set to latest to use latest cached model')
         self.parser.add_argument('--num_aug', type=int, default=1, help='# of augmentation files')
         self.parser.add_argument('--prelim_test', action='store_true')
-        self.parser.add_argument('--lin_eval_num_epoch', type=int, default=75, help='# of epochs for training linear classifier for linear evaluation protocol')
+        self.parser.add_argument('--lin_eval_num_epoch', type=int, default=100, help='# of epochs for training linear classifier for linear evaluation protocol')
+        self.parser.add_argument('--is_lin_eval', action='store_true', help='indicates whether we are in lin eval mode')
         self.is_train = False

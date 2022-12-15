@@ -20,9 +20,6 @@ def inference(loader, simclr_model, device):
         simclr_model.set_input(data)
         x = torch.from_numpy(data['edge_features']).to(device)
         y = torch.from_numpy(data['label']).to(device)
-        # x, y = data['edge_features'], data['label']
-        # print(x.shape, y.shape)
-        # get encoding
         with torch.no_grad():
             reps, out = simclr_model.forward()
             h, _ = reps
@@ -74,12 +71,11 @@ def train(opt, loader, simclr_model, model, criterion, optimizer, writer):
 
         x = x.to(opt.device)
         y = y.to(opt.device)
-        print(x.shape, y.shape)
 
         output = model(x)
         loss = criterion(output, y)
 
-        predicted = output.argmax(1)
+        predicted = torch.argmax(output, dim=1)
         acc = (predicted == y).sum().item() / y.size(0)
         accuracy_epoch += acc
 
@@ -99,11 +95,11 @@ def test(args, loader, simclr_model, model, criterion, optimizer, writer):
     loss_epoch = 0
     accuracy_epoch = 0
     model.eval()
-    for i, data in enumerate(loader):
+    for step, (x, y) in enumerate(loader):
         model.zero_grad()
 
-        x = data['edge_features'].to(opt.device)
-        y = data['label'].to(opt.device)
+        x = x.to(args.device)
+        y = y.to(args.device)
 
         output = model(x)
         loss = criterion(output, y)
@@ -122,38 +118,16 @@ if __name__ == "__main__":
 
     # args.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    '''if opt.dataroot == "datasets/shrec_16":
-        opt.is_train == True
-        train_dataset = ClassificationData(opt)
-        opt.is_train == False
-        test_dataset = ClassificationData(opt)
-    else:
-        raise NotImplementedError'''
-
     opt = TrainOptions().parse()
-    assert opt.dataroot == 'datasets/shrec_16', 'Dataset Not Implemented' 
+    # assert opt.dataroot == 'datasets/shrec_16', 'Dataset Not Implemented' 
     opt.is_train == True
     simclr_train_loader = DataLoader(opt)
-    opt = TestOptions().parse()
+    opt.phase = 'test'
     opt.is_train == False
     simclr_test_loader = DataLoader(opt) 
     print("len_train_loader", len(simclr_train_loader))
     print("len_test_loader", len(simclr_test_loader))
-    '''train_loader = torch.utils.data.DataLoader(
-        train_dataset,
-        batch_size=opt.batch_size,
-        shuffle=True,
-        drop_last=True,
-        num_workers=opt.num_threads,
-    )
-
-    test_loader = torch.utils.data.DataLoader(
-        test_dataset,
-        batch_size=opt.batch_size,
-        shuffle=False,
-        drop_last=True,
-        num_workers=opt.num_threads,
-    )'''
+    opt = TestOptions().parse()
     opt.dataset_mode == 'classification'
     opt.is_train == True
     train_loader = DataLoader(opt)
@@ -161,15 +135,11 @@ if __name__ == "__main__":
     test_loader = DataLoader(opt) 
 
     opt.dataset_mode == 'simclr'
-    # encoder = get_resnet(args.resnet, pretrained=False)
-    # n_features = encoder.fc.in_features  # get dimensions of fc layer
-
-    # load pre-trained model from checkpoint
     simclr_model = create_model(opt)
     writer = Writer(opt)
 
     ## Logistic Regression
-    n_classes = 10  # shrec
+    n_classes = 30  # shrec
     model = LogisticRegression(opt.out_dim, n_classes)
     model = model.to(opt.device)
 
@@ -193,8 +163,8 @@ if __name__ == "__main__":
             f"Epoch [{epoch}/{opt.lin_eval_num_epoch}]\t Loss: {loss_epoch / len(arr_train_loader)}\t Accuracy: {accuracy_epoch / len(arr_train_loader)}"
         )
         if writer.display:
-            writer.display.add_scalar('data/lin_eval_train_loss', loss_epoch / len(arr_train_loader), epoch) 
-            writer.display.add_scalar('data/lin_eval_train_acc', accuracy_epoch / len(arr_train_loader), epoch)
+            writer.display.add_scalar('lin_eval/train_loss', loss_epoch / len(arr_train_loader), epoch) 
+            writer.display.add_scalar('lin_eval/train_acc', accuracy_epoch / len(arr_train_loader), epoch)
 
     # final testing
     loss_epoch, accuracy_epoch = test(
@@ -204,5 +174,5 @@ if __name__ == "__main__":
         f"[FINAL]\t Loss: {loss_epoch / len(arr_test_loader)}\t Accuracy: {accuracy_epoch / len(arr_test_loader)}"
     )
     if writer.display:
-        writer.display.add_scalar('data/lin_eval_test_loss', loss_epoch / len(arr_test_loader))
-        writer.display.add_scalar('data/lin_eval_test_acc', accuracy_epoch / len(arr_test_loader))
+        writer.display.add_scalar('lin_eval/test_loss', loss_epoch / len(arr_test_loader))
+        writer.display.add_scalar('lin_eval/test_acc', accuracy_epoch / len(arr_test_loader))

@@ -48,7 +48,7 @@ def visualize_tsne(epoch=-1):
     print('final shape', all_rep.shape)
     y_tsne = tsne.fit_transform(all_rep)
     print('y_tsne shape', y_tsne.shape)
-    sns.scatterplot(x=y_tsne[:,0], y=y_tsne[:,1], hue=all_labels, legend='full', style=all_labels,  palette=sns.color_palette("husl", as_cmap=True))
+    sns.scatterplot(x=y_tsne[:,0], y=y_tsne[:,1], hue=all_labels, legend='full', style=all_labels,  palette=sns.color_palette("Spectral", as_cmap=True))
 
     fname = 'tsne_train_last_layer.png'
 

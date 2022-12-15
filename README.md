@@ -24,7 +24,7 @@ conda activate contrastive_meshes
 
 ## Usage
 
-The experiments so far are mainly conducted on the [`shrec`](http://shapenet.cs.stanford.edu/shrec16/) dataset for classification tasks. To download the dataset, run:
+The experiments so far are mainly conducted on the [`shrec`](https://www.dropbox.com/s/w16st84r6wc57u7/shrec_16.tar.gz) dataset for classification tasks. To download the dataset, run:
 ```
 bash scripts/shrec/get_data.sh
 ```

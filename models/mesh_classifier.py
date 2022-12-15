@@ -25,14 +25,18 @@ class ClassifierModel:
         self.soft_label = None
         self.loss = None
 
-        
-        if opt.dataset_mode == 'simclr':
-            opt.nclasses = opt.out_dim
+        print("out_dim:", opt.out_dim)
+        print("fc_n:", opt.fc_n)
+        print("dataset_mode", opt.dataset_mode)
 
         self.nclasses = opt.nclasses
 
         # load/define networks
-        self.net = networks.define_classifier(opt.input_nc, opt.ncf, opt.ninput_edges, opt.nclasses, opt,
+        if opt.dataset_mode != 'simclr':
+            self.net = networks.define_classifier(opt.input_nc, opt.ncf, opt.ninput_edges, opt.nclasses, opt,
+                                              self.gpu_ids, opt.arch, opt.init_type, opt.init_gain)
+        else: 
+            self.net = networks.define_classifier(opt.input_nc, opt.ncf, opt.ninput_edges, opt.out_dim, opt,
                                               self.gpu_ids, opt.arch, opt.init_type, opt.init_gain)
         self.net.train(self.is_train)
         self.criterion = networks.define_loss(opt).to(self.device)

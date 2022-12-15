@@ -69,10 +69,16 @@ class SimCLRData(BaseDataset):
                 continue
             for root, _, fnames in sorted(os.walk(d)):
                 for fname in sorted(fnames):
-                    if is_mesh_file(fname) and (root.count(phase)==1):
-                        path = os.path.join(root, fname)
-                        item = (path, class_to_idx[target])
-                        meshes.append(item)
+                    if phase != 'all':
+                        if is_mesh_file(fname) and (root.count(phase)==1):
+                            path = os.path.join(root, fname)
+                            item = (path, class_to_idx[target])
+                            meshes.append(item)
+                    else:
+                        if is_mesh_file(fname):
+                            path = os.path.join(root, fname)
+                            item = (path, class_to_idx[target])
+                            meshes.append(item)
         return meshes
 
     @staticmethod

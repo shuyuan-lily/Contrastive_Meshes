@@ -34,6 +34,13 @@ To view the visualization of training loss, test accuracy, and intermetiate mode
 ```
 tensorboard dev upload --logdir runs
 ```
+
+<p align="left">
+  <a href="https://tensorboard.dev/experiment/pjWNpRK3SYSA0VZeYAXW6g/#scalars" target="_blank">
+    <img src="/docs/imgs/tensorboard.png" height="40"/>
+  </a>
+</p>
+
 Here is an example of the training loss plot:
 
 <img src="/docs/imgs/training_loss.png" width="450px"/> 
@@ -48,6 +55,10 @@ To view the [T-SNE](https://en.wikipedia.org/wiki/T-distributed_stochastic_neigh
 ```
 bash scripts/shrec/tsne.sh
 ```
+Here is an example of the visualization on the entire dataset consisted of 600 meshes in shrec16, using both the train and test meshes:
+
+<img src="/docs/imgs/tsne_train_last_layer_2.png" width="500px"/> 
+
 ## Configuration
 
 

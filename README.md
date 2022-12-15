@@ -37,7 +37,7 @@ tensorboard dev upload --logdir runs
 
 You can check the sample plots here for reference and comparison:
 <p align="left">
-  <a href="https://tensorboard.dev/experiment/pjWNpRK3SYSA0VZeYAXW6g/#scalars" target="_blank">
+  <a href="https://tensorboard.dev/experiment/QowSAh3wRkSl7eLU4pAVog/" target="_blank">
     <img src="/docs/imgs/tensorboard.png" height="40"/>
   </a>
 </p>
